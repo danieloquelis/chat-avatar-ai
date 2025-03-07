@@ -35,7 +35,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
     audio.play();
     setAudio(audio);
     audio.onended = onMessagePlayed;
-  }, [message]);
+  }, [message, onMessagePlayed]);
 
   const group = useRef();
   const { actions, mixer } = useAnimations(animations, group);
