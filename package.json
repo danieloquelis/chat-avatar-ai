@@ -9,16 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.2.1",
     "@react-three/drei": "^10.0.4",
     "@react-three/fiber": "^9.0.4",
     "@react-three/xr": "^6.6.8",
     "@types/three": "^0.174.0",
+    "ai": "^4.1.54",
     "leva": "^0.10.0",
     "next": "15.2.1",
     "prettier": "^3.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "three": "^0.174.0"
+    "three": "^0.174.0",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
