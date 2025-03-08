@@ -21,7 +21,8 @@ export const Avatar: FC<AvatarProps> = (props) => {
     facialExpression,
     audioBase64,
     animation,
-    onMessagePlayed,
+    onAudioPlayed,
+    onAudioPlaying,
   } = useSpeech();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
@@ -34,9 +35,10 @@ export const Avatar: FC<AvatarProps> = (props) => {
 
     const audio = new Audio("data:audio/mp3;base64," + audioBase64);
     setAudio(audio);
-    audio.onended = onMessagePlayed;
+    audio.onended = onAudioPlayed;
+    audio.onplaying = onAudioPlaying;
     audio.play();
-  }, [audioBase64, onMessagePlayed]);
+  }, [audioBase64, onAudioPlayed, onAudioPlaying]);
 
   useEffect(() => {
     if (!actions[animation]) {
@@ -72,25 +74,24 @@ export const Avatar: FC<AvatarProps> = (props) => {
   };
 
   useFrame(() => {
-    !setupMode &&
-      morphTargets.forEach((key) => {
-        const mapping = facialExpressions[facialExpression];
-        if (key === "eyeBlinkLeft" || key === "eyeBlinkRight") {
-          return; // eyes wink/blink are handled separately
-        }
-        if (mapping && mapping[key]) {
-          lerpMorphTarget(key, mapping[key], 0.1);
-        } else {
-          lerpMorphTarget(key, 0, 0.1);
-        }
-      });
-
     lerpMorphTarget("eyeBlinkLeft", blink ? 1 : 0, 0.5);
     lerpMorphTarget("eyeBlinkRight", blink ? 1 : 0, 0.5);
 
     if (setupMode) {
       return;
     }
+
+    morphTargets.forEach((target) => {
+      const mapping = facialExpressions[facialExpression];
+
+      // Eyes wink/blink are handled separately
+      if (target === "eyeBlinkLeft" || target === "eyeBlinkRight") {
+        return;
+      }
+
+      const facialExpressionValue = mapping[target];
+      lerpMorphTarget(target, facialExpressionValue ?? 0, 0.1);
+    });
 
     const appliedMorphTargets: MorphTarget[] = [];
     if (phonemes && audio) {
@@ -121,13 +122,9 @@ export const Avatar: FC<AvatarProps> = (props) => {
     animation: {
       value: animation,
       options: animations.map((a) => a.name),
-      // onChange: (value) => {
-      //   setAnimation(value);
-      // },
     },
     facialExpression: {
       options: Object.keys(facialExpressions),
-      // onChange: (value) => setFacialExpression(value),
     },
     setupMode: button(() => {
       setSetupMode(!setupMode);

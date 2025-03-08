@@ -16,6 +16,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
     useState<FacialExpression>("default");
 
   const { trigger, isMutating } = useTTSApi();
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const tts = useCallback(
     async (message: string) => {
@@ -31,11 +32,16 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
     [trigger],
   );
 
-  const onMessagePlayed = useCallback(() => {
+  const onAudioPlayed = useCallback(() => {
+    setIsSpeaking(false);
     setAnimation("Idle");
     setPhonemes(undefined);
     setFacialExpression("default");
     setAudioAudioBase64(undefined);
+  }, []);
+
+  const onAudioPlaying = useCallback(() => {
+    setIsSpeaking(true);
   }, []);
 
   return (
@@ -43,7 +49,9 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
       value={{
         isLoading: isMutating,
         tts,
-        onMessagePlayed,
+        onAudioPlayed,
+        onAudioPlaying,
+        isSpeaking,
         facialExpression,
         phonemes,
         animation,

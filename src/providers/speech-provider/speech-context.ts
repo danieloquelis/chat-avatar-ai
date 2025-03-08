@@ -10,7 +10,9 @@ type SpeechContextValue = {
   animation: AvatarAnimationType;
   audioBase64: string | undefined;
   phonemes: Phoneme | undefined;
-  onMessagePlayed: () => void;
+  onAudioPlayed: () => void;
+  onAudioPlaying: () => void;
+  isSpeaking: boolean;
   isLoading: boolean;
 };
 
@@ -20,6 +22,8 @@ export const SpeechContext = createContext<SpeechContextValue>({
   animation: "Idle",
   audioBase64: undefined,
   phonemes: undefined,
-  onMessagePlayed: () => {},
+  onAudioPlayed: () => {},
+  onAudioPlaying: () => {},
+  isSpeaking: false,
   isLoading: false,
 });
