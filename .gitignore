@@ -42,3 +42,9 @@ next-env.d.ts
 
 # IDEs
 .idea
+
+# tools
+.tools/*
+
+# tmp
+tmp/*

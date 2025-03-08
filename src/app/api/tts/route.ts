@@ -2,6 +2,10 @@ import { generateObject, type Message } from "ai";
 import { NextResponse } from "next/server";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
+import { ElevenLabs } from "@/service/eleven-labs";
+import { streamToFile } from "@/utils/stream-to-file";
+import { Rhubarb } from "@/service/rhubarb";
+import { fileToBase64 } from "@/utils/file-to-base64";
 
 export const maxDuration = 30;
 const system = `You are an AI assistant named Taher. You will always respond with a JSON array of messages, with a maximum of 3 messages:
@@ -48,7 +52,41 @@ export async function POST(req: Request) {
 
     console.log("Result ====>", JSON.stringify(result));
 
-    return NextResponse.json(result);
+    // 1. Convert result from agent (text) to speech
+    const speechAsStream = await ElevenLabs.convertTextToSpeech({
+      text: result.text,
+    });
+
+    // 2. Convert the stream of the speech as an mp3 file in tmp folder
+    // To specify another folder, use the param filePath and fileName
+    const { fileName, filePath, format } = await streamToFile({
+      stream: speechAsStream,
+      fileName: "audio",
+      format: "mp3",
+    });
+
+    // 3. Convert audio to base64
+    const speechInBase64 = await fileToBase64({
+      format,
+      fileName,
+      filePath,
+    });
+
+    // 4. Extract phonemes using Rhubarb library
+    const phonemes = await Rhubarb.getPhonemes({
+      audioFileName: fileName,
+      audioFilePath: filePath,
+    });
+    if (!phonemes) {
+      console.error("[Api /api/tts]", "Did not find phonemes");
+      return NextResponse.json({ status: 500 });
+    }
+
+    return NextResponse.json({
+      ...result,
+      audio: speechInBase64,
+      lipsync: phonemes,
+    });
   } catch (error) {
     console.error("Error in streaming route:", error);
     return NextResponse.json({ status: 500 });
