@@ -19,6 +19,10 @@ export const Chat: FC<ChatProps> = (props) => {
       }
 
       const text = input.current.value;
+      if (!text.trim()) {
+        return;
+      }
+
       await tts(text);
       input.current.value = "";
     },
