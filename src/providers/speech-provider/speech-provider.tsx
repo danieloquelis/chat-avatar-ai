@@ -2,43 +2,12 @@
 
 import { FC, PropsWithChildren, useCallback, useState } from "react";
 import { SpeechContext } from "./speech-context";
-import { useMutation } from "@/hooks/use-mutation";
-import { Phoneme } from "@/service/rhubarb";
-
-export type TTSResponse = {
-  text: string;
-  facialExpression:
-    | "smile"
-    | "sad"
-    | "angry"
-    | "surprised"
-    | "funnyFace"
-    | "default";
-  animation:
-    | "Idle"
-    | "TalkingOne"
-    | "TalkingThree"
-    | "SadIdle"
-    | "Defeated"
-    | "Angry"
-    | "Surprised"
-    | "DismissingGesture"
-    | "ThoughtfulHeadShake";
-  audio: string;
-  phonemes: Phoneme;
-};
-
-type TTSRequest = {
-  message: string;
-};
+import { TTSApiResponse, useTTSApi } from "@/api/tts-api";
 
 export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const { children } = props;
-  const [message, setMessage] = useState<TTSResponse | undefined>();
-  const { trigger, isMutating } = useMutation<TTSResponse, TTSRequest>(
-    "/api/tts",
-    "POST",
-  );
+  const [message, setMessage] = useState<TTSApiResponse | undefined>();
+  const { trigger, isMutating } = useTTSApi();
 
   const tts = useCallback(
     async (message: string) => {

@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       text: result.text,
     });
 
-    // 2. Convert the stream of the speech as an mp3 file in tmp folder
+    // 2. Convert the stream of the speech as a mp3 file in tmp folder
     // To specify another folder, use the param filePath and fileName
     const { fileName, filePath, format } = await streamToFile({
       stream: speechAsStream,
