@@ -13,7 +13,6 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
       stopRecording,
       handleSubmit,
     } = props;
-    const [input, setInput] = useState("");
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -30,10 +29,8 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
         <div className="relative border rounded-lg bg-background shadow-sm">
           <Textarea
             ref={ref}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Message v0..."
+            placeholder="Ask something to the avatar..."
             className="min-h-[80px] resize-none pr-20 py-4 bg-transparent"
             disabled={isLoading}
           />
@@ -52,7 +49,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
               type="submit"
               size="icon"
               className="rounded-full"
-              disabled={!input.trim() || isLoading}
+              disabled={isLoading}
             >
               <Send className="h-5 w-5" />
             </Button>
