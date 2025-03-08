@@ -1,4 +1,4 @@
-const morphTargets = [
+export const morphTargets = [
   "mouthOpen",
   "viseme_sil",
   "viseme_PP",
@@ -68,6 +68,6 @@ const morphTargets = [
   "tongueOut",
   "eyeBlinkLeft",
   "eyeBlinkRight",
-];
+] as const;
 
-export default morphTargets;
+export type MorphTarget = (typeof morphTargets)[number];

@@ -1,10 +1,10 @@
 "use client";
 import { createContext } from "react";
-import { TTSResponse } from "./speech-provider";
+import { TTSApiResponse } from "@/api/tts-api";
 
 type SpeechContextValue = {
   tts: (message: string) => Promise<void>;
-  message: TTSResponse | undefined;
+  message: TTSApiResponse | undefined;
   onMessagePlayed: () => void;
   isLoading: boolean;
 };

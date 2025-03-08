@@ -1,37 +1,34 @@
 "use client";
 
-import { useAnimations, useGLTF } from "@react-three/drei";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { button, useControls } from "leva";
-import React, { FC, useEffect, useRef, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 
 import * as THREE from "three";
-import facialExpressions from "@/constants/facial-expressions";
-import visemesMapping from "@/constants/visemes-mapping";
-import morphTargets from "@/constants/morph-targets";
+import {
+  FacialExpression,
+  facialExpressions,
+} from "@/constants/facial-expressions";
+import { visemesMapping } from "@/constants/visemes-mapping";
+import { morphTargets, MorphTarget } from "@/constants/morph-targets";
 import { useSpeech } from "@/providers/speech-provider";
-import { AvatarProps } from "./avatar-common";
-import { GLTFLoader } from "three-stdlib";
+import { AvatarAnimationType, AvatarProps } from "./avatar-common";
 import { Phoneme } from "@/service/rhubarb";
-import { Object3D } from "three";
+import { useAvatarModel } from "./use-avatar-model";
+import { useAvatarAnimations } from "./use-avatar-animations";
 
 export const Avatar: FC<AvatarProps> = (props) => {
-  const { nodes, materials, scene } = useLoader(
-    GLTFLoader,
-    "/assets/avatar.glb",
-  );
-  const { animations } = useLoader(GLTFLoader, "/assets/animations.glb");
+  const { nodes, materials, scene } = useAvatarModel(); //useGLTF("/assets/avatar.glb");
+  const { animations, group, actions } = useAvatarAnimations(); //useGLTF("/assets/animations.glb");
+
   const { message, onMessagePlayed } = useSpeech();
   const [phonemes, setPhonemes] = useState<Phoneme>();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
-  const [facialExpression, setFacialExpression] = useState("");
+  const [facialExpression, setFacialExpression] =
+    useState<FacialExpression>("default");
   const [audio, setAudio] = useState<HTMLAudioElement>();
-  const group = useRef<Object3D>(null);
-  const { actions, mixer } = useAnimations(animations, group);
-  const [animation, setAnimation] = useState(
-    animations.find((a) => a.name === "Idle") ? "Idle" : animations[0].name,
-  );
+  const [animation, setAnimation] = useState<AvatarAnimationType>("Idle");
 
   useEffect(() => {
     if (!message) {
@@ -50,20 +47,20 @@ export const Avatar: FC<AvatarProps> = (props) => {
   }, [message, onMessagePlayed]);
 
   useEffect(() => {
-    if (actions[animation]) {
-      actions[animation]
-        .reset()
-        .fadeIn(mixer.stats.actions.inUse === 0 ? 0 : 0.5)
-        .play();
-      return () => {
-        if (actions[animation]) {
-          actions[animation].fadeOut(0.5);
-        }
-      };
+    if (!actions[animation]) {
+      return;
     }
-  }, [actions, animation, mixer.stats.actions.inUse]);
 
-  const lerpMorphTarget = (target, value, speed = 0.1) => {
+    actions[animation].reset().fadeIn(0.5).play();
+
+    return () => {
+      if (actions[animation]) {
+        actions[animation].fadeOut(0.5);
+      }
+    };
+  }, [actions, animation]);
+
+  const lerpMorphTarget = (target: MorphTarget, value: number, speed = 0.1) => {
     scene.traverse((child) => {
       if (child.isSkinnedMesh && child.morphTargetDictionary) {
         const index = child.morphTargetDictionary[target];
@@ -103,8 +100,8 @@ export const Avatar: FC<AvatarProps> = (props) => {
       return;
     }
 
-    const appliedMorphTargets = [];
-    if (message && phonemes) {
+    const appliedMorphTargets: MorphTarget[] = [];
+    if (message && phonemes && audio) {
       const currentAudioTime = audio.currentTime;
       for (let i = 0; i < phonemes.mouthCues.length; i++) {
         const mouthCue = phonemes.mouthCues[i];
@@ -143,24 +140,6 @@ export const Avatar: FC<AvatarProps> = (props) => {
     setupMode: button(() => {
       setSetupMode(!setupMode);
     }),
-    logMorphTargetValues: button(() => {
-      const emotionValues = {};
-      Object.values(nodes).forEach((node) => {
-        if (node.morphTargetInfluences && node.morphTargetDictionary) {
-          morphTargets.forEach((key) => {
-            if (key === "eyeBlinkLeft" || key === "eyeBlinkRight") {
-              return;
-            }
-            const value =
-              node.morphTargetInfluences[node.morphTargetDictionary[key]];
-            if (value > 0.01) {
-              emotionValues[key] = value;
-            }
-          });
-        }
-      });
-      console.log(JSON.stringify(emotionValues, null, 2));
-    }),
   });
 
   useControls("MorphTarget", () =>
@@ -173,7 +152,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
             value: 0,
             min: 0,
             max: 1,
-            onChange: (val) => {
+            onChange: (val: number) => {
               lerpMorphTarget(key, val, 0.1);
             },
           },
@@ -183,7 +162,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
   );
 
   useEffect(() => {
-    let blinkTimeout;
+    let blinkTimeout: NodeJS.Timeout;
     const nextBlink = () => {
       blinkTimeout = setTimeout(
         () => {
@@ -268,5 +247,3 @@ export const Avatar: FC<AvatarProps> = (props) => {
     </group>
   );
 };
-
-useGLTF.preload("/models/avatar.glb");

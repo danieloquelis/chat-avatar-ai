@@ -1,14 +1,9 @@
 import { Phoneme } from "@/service/rhubarb";
+import { FacialExpression } from "@/constants/facial-expressions";
 
 export type TTSApiResponse = {
   text: string;
-  facialExpression:
-    | "smile"
-    | "sad"
-    | "angry"
-    | "surprised"
-    | "funnyFace"
-    | "default";
+  facialExpression: FacialExpression;
   animation:
     | "Idle"
     | "TalkingOne"

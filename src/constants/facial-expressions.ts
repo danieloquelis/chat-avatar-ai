@@ -1,4 +1,22 @@
-const facialExpressions = {
+import { MorphTarget } from "@/constants/morph-targets";
+
+export type FacialExpressionValues = {
+  [key in MorphTarget]: number;
+};
+
+export type FacialExpression =
+  | "default"
+  | "smile"
+  | "funnyFace"
+  | "sad"
+  | "surprised"
+  | "angry"
+  | "crazy";
+
+export const facialExpressions: Record<
+  FacialExpression,
+  Partial<FacialExpressionValues>
+> = {
   default: {},
   smile: {
     browInnerUp: 0.17,
@@ -78,5 +96,3 @@ const facialExpressions = {
     tongueOut: 0.9618479575523053,
   },
 };
-
-export default facialExpressions;
