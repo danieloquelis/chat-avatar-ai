@@ -9,6 +9,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
     const {
       isLoading,
       isRecording,
+      isSpeaking,
       startRecording,
       stopRecording,
       handleSubmit,
@@ -32,7 +33,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
             onKeyDown={handleKeyDown}
             placeholder="Ask something to the avatar..."
             className="min-h-[80px] resize-none pr-20 py-4 bg-transparent placeholder:text-gray"
-            disabled={isLoading}
+            disabled={isLoading || isSpeaking}
           />
           <div className="absolute right-2 bottom-2 flex items-center gap-2">
             <Button
@@ -41,7 +42,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
               variant="ghost"
               onClick={isRecording ? stopRecording : startRecording}
               className={`rounded-full ${isRecording ? "text-red-500" : ""}`}
-              disabled={isLoading}
+              disabled={isLoading || isSpeaking}
             >
               <Mic className="h-5 w-5" />
             </Button>
@@ -49,7 +50,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
               type="submit"
               size="icon"
               className="rounded-full"
-              disabled={isLoading}
+              disabled={isLoading || isSpeaking}
             >
               <Send className="h-5 w-5" />
             </Button>

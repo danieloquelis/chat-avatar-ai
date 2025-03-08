@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, FormEvent, useCallback, useRef } from "react";
+import { FC, FormEvent, useCallback, useEffect, useRef } from "react";
 import { ChatProps } from "./chat-common";
 import { useSpeech } from "@/providers/speech-provider";
 import { PromptInput } from "@/components/prompt-input";
@@ -30,6 +30,12 @@ export const Chat: FC<ChatProps> = (props) => {
     [isLoading, isSpeaking, tts],
   );
 
+  useEffect(() => {
+    if (!isSpeaking && input.current) {
+      input.current.focus();
+    }
+  }, [isSpeaking]);
+
   if (hidden) {
     return null;
   }
@@ -43,6 +49,7 @@ export const Chat: FC<ChatProps> = (props) => {
       <PromptInput
         ref={input}
         isLoading={isLoading}
+        isSpeaking={isSpeaking}
         isRecording={false}
         startRecording={() => {}}
         stopRecording={() => {}}
