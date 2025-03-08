@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { button, useControls } from "leva";
-import React, { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 
 import * as THREE from "three";
 import { facialExpressions } from "@/constants/facial-expressions";
@@ -12,6 +12,7 @@ import { useSpeech } from "@/providers/speech-provider";
 import { AvatarProps } from "./avatar-common";
 import { useAvatarModel } from "./use-avatar-model";
 import { useAvatarAnimations } from "./use-avatar-animations";
+import { isSkinnedMesh } from "@/utils/is-skinned-mesh";
 
 export const Avatar: FC<AvatarProps> = (props) => {
   const { nodes, materials, scene } = useAvatarModel(); //useGLTF("/assets/avatar.glb");
@@ -54,24 +55,32 @@ export const Avatar: FC<AvatarProps> = (props) => {
     };
   }, [actions, animation]);
 
-  const lerpMorphTarget = (target: MorphTarget, value: number, speed = 0.1) => {
-    scene.traverse((child) => {
-      if (child.isSkinnedMesh && child.morphTargetDictionary) {
-        const index = child.morphTargetDictionary[target];
+  const lerpMorphTarget = useCallback(
+    (target: MorphTarget, value: number, speed = 0.1) => {
+      scene.traverse((child) => {
         if (
-          index === undefined ||
-          child.morphTargetInfluences[index] === undefined
+          !isSkinnedMesh(child) ||
+          !child.morphTargetDictionary ||
+          !child.morphTargetInfluences
         ) {
           return;
         }
+
+        const index = child.morphTargetDictionary[target];
+        const morphTargetInfluence = child.morphTargetInfluences[index];
+        if (!morphTargetInfluence) {
+          return;
+        }
+
         child.morphTargetInfluences[index] = THREE.MathUtils.lerp(
-          child.morphTargetInfluences[index],
+          morphTargetInfluence,
           value,
           speed,
         );
-      }
-    });
-  };
+      });
+    },
+    [scene],
+  );
 
   useFrame(() => {
     lerpMorphTarget("eyeBlinkLeft", blink ? 1 : 0, 0.5);
