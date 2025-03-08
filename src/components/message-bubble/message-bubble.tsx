@@ -11,12 +11,12 @@ export const MessageBubble: FC<MessageBubbleProps> = (props) => {
   return (
     <div
       className={cn(
-        "flex w-full items-start gap-4 py-4",
+        "flex w-full items-start gap-4 py-2",
         isUser ? "justify-end" : "justify-start",
       )}
     >
       {!isUser && (
-        <Avatar className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+        <Avatar className="h-8 w-8 rounded-full bg-background flex items-center justify-center">
           <Bot className="h-5 w-5 text-primary" />
         </Avatar>
       )}

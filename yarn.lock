@@ -1403,6 +1403,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/prismjs@npm:^1.26.0":
+  version: 1.26.5
+  resolution: "@types/prismjs@npm:1.26.5"
+  checksum: 10c0/5619cb449e0d8df098c8759d6f47bf8fdd510abf5dbdfa999e55c6a2545efbd1e209cc85a33d8d9f4ff2898089a1a6d9a70737c9baffaae635c46852c40d384a
+  languageName: node
+  linkType: hard
+
 "@types/react-dom@npm:^19":
   version: 19.0.4
   resolution: "@types/react-dom@npm:19.0.4"
@@ -2043,6 +2050,7 @@ __metadata:
     react-dom: "npm:^19.0.0"
     swr: "npm:^2.3.3"
     tailwind-merge: "npm:^3.0.2"
+    tailwind-scrollbar: "npm:^4.0.1"
     tailwindcss: "npm:^4"
     tailwindcss-animate: "npm:^1.0.7"
     three: "npm:^0.174.0"
@@ -2069,7 +2077,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:^2.1.1":
+"clsx@npm:^2.0.0, clsx@npm:^2.1.1":
   version: 2.1.1
   resolution: "clsx@npm:2.1.1"
   checksum: 10c0/c4c8eb865f8c82baab07e71bfa8897c73454881c4f99d6bc81585aecd7c441746c1399d08363dc096c550cceaf97bd4ce1e8854e1771e9998d9f94c4fe075839
@@ -4460,6 +4468,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prism-react-renderer@npm:^2.4.1":
+  version: 2.4.1
+  resolution: "prism-react-renderer@npm:2.4.1"
+  dependencies:
+    "@types/prismjs": "npm:^1.26.0"
+    clsx: "npm:^2.0.0"
+  peerDependencies:
+    react: ">=16.0.0"
+  checksum: 10c0/ebbe8feb975224344bbdd046b3a937d121592dbe4b8f22ba0be31f5af37b9a8219f441138ef6cab1c5b96f2aa6b529015200959f7e5e85b60ca69c81d35edcd4
+  languageName: node
+  linkType: hard
+
 "process@npm:^0.11.10":
   version: 0.11.10
   resolution: "process@npm:0.11.10"
@@ -5274,6 +5294,17 @@ __metadata:
   version: 3.0.2
   resolution: "tailwind-merge@npm:3.0.2"
   checksum: 10c0/73f528345e5130e7690c5c57701155849ae4f0834e0a4bf56bc03e25d4563d45d4905ff9c487a7dce9efdfa18689a223e78365962105ad0e2f2d1226216c66ef
+  languageName: node
+  linkType: hard
+
+"tailwind-scrollbar@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "tailwind-scrollbar@npm:4.0.1"
+  dependencies:
+    prism-react-renderer: "npm:^2.4.1"
+  peerDependencies:
+    tailwindcss: 4.x
+  checksum: 10c0/db092c0599cda3461b3ae6752f72691c1b824abd6ffeebc043ad98a67a4c083f1ccb29e6f633ac541b7817a5bb4c20ac12b7d664633078fc5f6ba5efb9ee6fe4
   languageName: node
   linkType: hard
 
