@@ -1,20 +1,15 @@
 "use client";
 import { createContext } from "react";
+import { TTSResponse } from "./speech-provider";
 
 type SpeechContextValue = {
-  startRecording: () => void;
-  stopRecording: () => void;
-  isRecording: boolean;
   tts: (message: string) => Promise<void>;
-  message: string | undefined;
+  message: TTSResponse | undefined;
   onMessagePlayed: () => void;
   isLoading: boolean;
 };
 
 export const SpeechContext = createContext<SpeechContextValue>({
-  startRecording: () => {},
-  stopRecording: () => {},
-  isRecording: false,
   tts: async () => {},
   message: undefined,
   onMessagePlayed: () => {},

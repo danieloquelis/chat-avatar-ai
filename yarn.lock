@@ -1237,6 +1237,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/add@npm:^2":
+  version: 2.0.3
+  resolution: "@types/add@npm:2.0.3"
+  checksum: 10c0/d18841b43d3799f69db0bdae380d19d05f43b716315c5bfd4d6c1b3467bada2644eab8c04bb5afdb94bba87604da06d466f22fe30df6bcf0518c373593bb474a
+  languageName: node
+  linkType: hard
+
 "@types/diff-match-patch@npm:^1.0.36":
   version: 1.0.36
   resolution: "@types/diff-match-patch@npm:1.0.36"
@@ -1511,6 +1518,13 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 10c0/dbd36c1ed1d2fa3550140000371fcf721578095b18777b85a79df231ca093b08edc6858d75d6e48c73e431c174dcf9214edbd7e6fa5911b93bd8abfa54e47123
+  languageName: node
+  linkType: hard
+
+"add@npm:^2.0.6":
+  version: 2.0.6
+  resolution: "add@npm:2.0.6"
+  checksum: 10c0/6b21d5f2e58cf5e15d56cc6f9ebce04f04f4c33ae25f09d600ddacf8df00036ba521f17feb1b3f81307b7c6d2ef0bed8b511a0f86f062eb90c2f909b48b588ae
   languageName: node
   linkType: hard
 
@@ -1899,10 +1913,12 @@ __metadata:
     "@react-three/fiber": "npm:^9.0.4"
     "@react-three/xr": "npm:^6.6.8"
     "@tailwindcss/postcss": "npm:^4"
+    "@types/add": "npm:^2"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
     "@types/three": "npm:^0.174.0"
+    add: "npm:^2.0.6"
     ai: "npm:^4.1.54"
     elevenlabs: "npm:^1.53.0"
     eslint: "npm:^9"
@@ -1912,10 +1928,12 @@ __metadata:
     prettier: "npm:^3.5.3"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
+    swr: "npm:^2.3.3"
     tailwindcss: "npm:^4"
     three: "npm:^0.174.0"
     typescript: "npm:^5"
     uuid: "npm:^11.1.0"
+    yarn: "npm:^1.22.22"
     zod: "npm:^3.24.2"
   languageName: unknown
   linkType: soft
@@ -5100,7 +5118,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swr@npm:^2.2.5":
+"swr@npm:^2.2.5, swr@npm:^2.3.3":
   version: 2.3.3
   resolution: "swr@npm:2.3.3"
   dependencies:
@@ -5578,6 +5596,16 @@ __metadata:
   version: 1.2.5
   resolution: "word-wrap@npm:1.2.5"
   checksum: 10c0/e0e4a1ca27599c92a6ca4c32260e8a92e8a44f4ef6ef93f803f8ed823f486e0889fc0b93be4db59c8d51b3064951d25e43d434e95dc8c960cc3a63d65d00ba20
+  languageName: node
+  linkType: hard
+
+"yarn@npm:^1.22.22":
+  version: 1.22.22
+  resolution: "yarn@npm:1.22.22"
+  bin:
+    yarn: bin/yarn.js
+    yarnpkg: bin/yarn.js
+  checksum: 10c0/8c77198c93d7542e7f4e131c63b66de357b7076ecfbcfe709ec0d674115c2dd9edaa45196e5510e6e9366d368707a802579e3402071002e1c9d9a99d491478de
   languageName: node
   linkType: hard
 

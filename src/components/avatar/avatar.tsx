@@ -12,6 +12,8 @@ import morphTargets from "@/constants/morph-targets";
 import { useSpeech } from "@/providers/speech-provider";
 import { AvatarProps } from "./avatar-common";
 import { GLTFLoader } from "three-stdlib";
+import { Phoneme } from "@/service/rhubarb";
+import { Object3D } from "three";
 
 export const Avatar: FC<AvatarProps> = (props) => {
   const { nodes, materials, scene } = useLoader(
@@ -20,28 +22,32 @@ export const Avatar: FC<AvatarProps> = (props) => {
   );
   const { animations } = useLoader(GLTFLoader, "/assets/animations.glb");
   const { message, onMessagePlayed } = useSpeech();
-  const [lipSync, setLipSync] = useState();
+  const [phonemes, setPhonemes] = useState<Phoneme>();
   const [setupMode, setSetupMode] = useState(false);
+  const [blink, setBlink] = useState(false);
+  const [facialExpression, setFacialExpression] = useState("");
+  const [audio, setAudio] = useState<HTMLAudioElement>();
+  const group = useRef<Object3D>(null);
+  const { actions, mixer } = useAnimations(animations, group);
+  const [animation, setAnimation] = useState(
+    animations.find((a) => a.name === "Idle") ? "Idle" : animations[0].name,
+  );
 
   useEffect(() => {
     if (!message) {
       setAnimation("Idle");
       return;
     }
+
     setAnimation(message.animation);
     setFacialExpression(message.facialExpression);
-    setLipSync(message.lipsync);
+    setPhonemes(message.phonemes);
+
     const audio = new Audio("data:audio/mp3;base64," + message.audio);
-    audio.play();
     setAudio(audio);
     audio.onended = onMessagePlayed;
+    audio.play();
   }, [message, onMessagePlayed]);
-
-  const group = useRef();
-  const { actions, mixer } = useAnimations(animations, group);
-  const [animation, setAnimation] = useState(
-    animations.find((a) => a.name === "Idle") ? "Idle" : animations[0].name,
-  );
 
   useEffect(() => {
     if (actions[animation]) {
@@ -55,7 +61,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
         }
       };
     }
-  }, [animation]);
+  }, [actions, animation, mixer.stats.actions.inUse]);
 
   const lerpMorphTarget = (target, value, speed = 0.1) => {
     scene.traverse((child) => {
@@ -75,10 +81,6 @@ export const Avatar: FC<AvatarProps> = (props) => {
       }
     });
   };
-
-  const [blink, setBlink] = useState(false);
-  const [facialExpression, setFacialExpression] = useState("");
-  const [audio, setAudio] = useState();
 
   useFrame(() => {
     !setupMode &&
@@ -102,10 +104,10 @@ export const Avatar: FC<AvatarProps> = (props) => {
     }
 
     const appliedMorphTargets = [];
-    if (message && lipSync) {
+    if (message && phonemes) {
       const currentAudioTime = audio.currentTime;
-      for (let i = 0; i < lipSync.mouthCues.length; i++) {
-        const mouthCue = lipSync.mouthCues[i];
+      for (let i = 0; i < phonemes.mouthCues.length; i++) {
+        const mouthCue = phonemes.mouthCues[i];
         if (
           currentAudioTime >= mouthCue.start &&
           currentAudioTime <= mouthCue.end

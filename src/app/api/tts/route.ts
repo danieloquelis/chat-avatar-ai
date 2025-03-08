@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       ...result,
       audio: speechInBase64,
-      lipsync: phonemes,
+      phonemes: phonemes,
     });
   } catch (error) {
     console.error("Error in streaming route:", error);
