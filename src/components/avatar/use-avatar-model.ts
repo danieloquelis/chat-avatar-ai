@@ -11,7 +11,7 @@ export const useAvatarModel = () => {
 
   return {
     ...rest,
-    scene,
+    scene: clone,
     nodes,
     materials,
   };

@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { button, useControls } from "leva";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 
 import * as THREE from "three";
 import { facialExpressions } from "@/constants/facial-expressions";
@@ -13,10 +13,11 @@ import { AvatarProps } from "./avatar-common";
 import { useAvatarModel } from "./use-avatar-model";
 import { useAvatarAnimations } from "./use-avatar-animations";
 import { isSkinnedMesh } from "@/utils/is-skinned-mesh";
+import { SkinnedMesh } from "three";
 
 export const Avatar: FC<AvatarProps> = (props) => {
-  const { nodes, materials, scene } = useAvatarModel(); //useGLTF("/assets/avatar.glb");
-  const { animations, group, actions } = useAvatarAnimations(); //useGLTF("/assets/animations.glb");
+  const { nodes, materials, scene } = useAvatarModel();
+  const { animations, group, actions } = useAvatarAnimations();
   const {
     phonemes,
     facialExpression,
@@ -27,18 +28,42 @@ export const Avatar: FC<AvatarProps> = (props) => {
   } = useSpeech();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
-  const [audio, setAudio] = useState<HTMLAudioElement>();
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const skinnedMeshesRef = useRef<SkinnedMesh[]>([]);
+
+  useEffect(() => {
+    const skinnedMeshes: SkinnedMesh[] = [];
+    scene.traverse((child) => {
+      if (isSkinnedMesh(child) && child.morphTargetDictionary) {
+        skinnedMeshes.push(child);
+      }
+    });
+    skinnedMeshesRef.current = skinnedMeshes;
+  }, [scene]);
 
   useEffect(() => {
     if (!audioBase64) {
       return;
     }
 
+    // Stop any previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
     const audio = new Audio("data:audio/mp3;base64," + audioBase64);
-    setAudio(audio);
+    audioRef.current = audio;
+
     audio.onended = onAudioPlayed;
     audio.onplaying = onAudioPlaying;
     audio.play();
+
+    // Cleanup if needed
+    return () => {
+      audio.pause();
+      audioRef.current = null;
+    };
   }, [audioBase64, onAudioPlayed, onAudioPlaying]);
 
   useEffect(() => {
@@ -57,29 +82,25 @@ export const Avatar: FC<AvatarProps> = (props) => {
 
   const lerpMorphTarget = useCallback(
     (target: MorphTarget, value: number, speed = 0.1) => {
-      scene.traverse((child) => {
-        if (
-          !isSkinnedMesh(child) ||
-          !child.morphTargetDictionary ||
-          !child.morphTargetInfluences
-        ) {
-          return;
+      for (const mesh of skinnedMeshesRef.current) {
+        if (!mesh.morphTargetDictionary || !mesh.morphTargetInfluences) {
+          continue;
         }
 
-        const index = child.morphTargetDictionary[target];
-        const morphTargetInfluence = child.morphTargetInfluences[index];
-        if (!morphTargetInfluence) {
-          return;
+        const index = mesh.morphTargetDictionary[target];
+        if (!index) {
+          continue;
         }
 
-        child.morphTargetInfluences[index] = THREE.MathUtils.lerp(
-          morphTargetInfluence,
+        const current = mesh.morphTargetInfluences[index];
+        mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(
+          current,
           value,
           speed,
         );
-      });
+      }
     },
-    [scene],
+    [],
   );
 
   useFrame(() => {
@@ -103,8 +124,8 @@ export const Avatar: FC<AvatarProps> = (props) => {
     });
 
     const appliedMorphTargets: MorphTarget[] = [];
-    if (phonemes && audio) {
-      const currentAudioTime = audio.currentTime;
+    if (phonemes && audioRef?.current) {
+      const currentAudioTime = audioRef.current.currentTime ?? 0;
       for (let i = 0; i < phonemes.mouthCues.length; i++) {
         const mouthCue = phonemes.mouthCues[i];
         if (
@@ -140,23 +161,23 @@ export const Avatar: FC<AvatarProps> = (props) => {
     }),
   });
 
-  useControls("MorphTarget", () =>
-    Object.assign(
-      {},
-      ...morphTargets.map((key) => {
-        return {
-          [key]: {
-            label: key,
-            value: 0,
-            min: 0,
-            max: 1,
-            onChange: (val: number) => {
-              lerpMorphTarget(key, val, 0.1);
+  useControls("Morph Targets", () =>
+    setupMode
+      ? Object.assign(
+          {},
+          ...morphTargets.map((key) => ({
+            [key]: {
+              label: key,
+              value: 0,
+              min: 0,
+              max: 1,
+              onChange: (val: number) => {
+                lerpMorphTarget(key, val, 0.1);
+              },
             },
-          },
-        };
-      }),
-    ),
+          })),
+        )
+      : {},
   );
 
   useEffect(() => {
