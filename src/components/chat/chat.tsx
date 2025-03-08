@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useCallback, useRef } from "react";
+import { FC, FormEvent, useCallback, useRef } from "react";
 import { ChatProps } from "./chat-common";
 import { useSpeech } from "@/providers/speech-provider";
 import { PromptInput } from "@/components/prompt-input";
@@ -11,7 +11,7 @@ export const Chat: FC<ChatProps> = (props) => {
   const input = useRef<HTMLTextAreaElement>(null);
 
   const submit = useCallback(
-    async (event: React.FormEvent<HTMLFormElement>) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
 
       if (isLoading || isSpeaking || !input.current) {

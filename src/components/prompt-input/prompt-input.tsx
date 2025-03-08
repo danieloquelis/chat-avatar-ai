@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from "react";
+import React, { forwardRef } from "react";
 import { PromptInputProps } from "./prompt-input-common";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
