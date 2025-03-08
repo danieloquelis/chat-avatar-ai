@@ -16,5 +16,3 @@ export const useAvatarModel = () => {
     materials,
   };
 };
-
-useGLTF.preload("/assets/avatar.glb");

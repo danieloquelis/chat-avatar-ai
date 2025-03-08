@@ -5,46 +5,38 @@ import { button, useControls } from "leva";
 import React, { FC, useEffect, useState } from "react";
 
 import * as THREE from "three";
-import {
-  FacialExpression,
-  facialExpressions,
-} from "@/constants/facial-expressions";
+import { facialExpressions } from "@/constants/facial-expressions";
 import { visemesMapping } from "@/constants/visemes-mapping";
 import { morphTargets, MorphTarget } from "@/constants/morph-targets";
 import { useSpeech } from "@/providers/speech-provider";
-import { AvatarAnimationType, AvatarProps } from "./avatar-common";
-import { Phoneme } from "@/service/rhubarb";
+import { AvatarProps } from "./avatar-common";
 import { useAvatarModel } from "./use-avatar-model";
 import { useAvatarAnimations } from "./use-avatar-animations";
 
 export const Avatar: FC<AvatarProps> = (props) => {
   const { nodes, materials, scene } = useAvatarModel(); //useGLTF("/assets/avatar.glb");
   const { animations, group, actions } = useAvatarAnimations(); //useGLTF("/assets/animations.glb");
-
-  const { message, onMessagePlayed } = useSpeech();
-  const [phonemes, setPhonemes] = useState<Phoneme>();
+  const {
+    phonemes,
+    facialExpression,
+    audioBase64,
+    animation,
+    onMessagePlayed,
+  } = useSpeech();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
-  const [facialExpression, setFacialExpression] =
-    useState<FacialExpression>("default");
   const [audio, setAudio] = useState<HTMLAudioElement>();
-  const [animation, setAnimation] = useState<AvatarAnimationType>("Idle");
 
   useEffect(() => {
-    if (!message) {
-      setAnimation("Idle");
+    if (!audioBase64) {
       return;
     }
 
-    setAnimation(message.animation);
-    setFacialExpression(message.facialExpression);
-    setPhonemes(message.phonemes);
-
-    const audio = new Audio("data:audio/mp3;base64," + message.audio);
+    const audio = new Audio("data:audio/mp3;base64," + audioBase64);
     setAudio(audio);
     audio.onended = onMessagePlayed;
     audio.play();
-  }, [message, onMessagePlayed]);
+  }, [audioBase64, onMessagePlayed]);
 
   useEffect(() => {
     if (!actions[animation]) {
@@ -101,7 +93,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
     }
 
     const appliedMorphTargets: MorphTarget[] = [];
-    if (message && phonemes && audio) {
+    if (phonemes && audio) {
       const currentAudioTime = audio.currentTime;
       for (let i = 0; i < phonemes.mouthCues.length; i++) {
         const mouthCue = phonemes.mouthCues[i];
@@ -129,13 +121,13 @@ export const Avatar: FC<AvatarProps> = (props) => {
     animation: {
       value: animation,
       options: animations.map((a) => a.name),
-      onChange: (value) => {
-        setAnimation(value);
-      },
+      // onChange: (value) => {
+      //   setAnimation(value);
+      // },
     },
     facialExpression: {
       options: Object.keys(facialExpressions),
-      onChange: (value) => setFacialExpression(value),
+      // onChange: (value) => setFacialExpression(value),
     },
     setupMode: button(() => {
       setSetupMode(!setupMode);
