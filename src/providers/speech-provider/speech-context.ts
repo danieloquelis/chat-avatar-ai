@@ -3,6 +3,7 @@ import { createContext } from "react";
 import { FacialExpression } from "@/constants/facial-expressions";
 import { Phoneme } from "@/service/rhubarb";
 import { AvatarAnimationType } from "@/components/avatar";
+import { UIMessage } from "ai";
 
 type SpeechContextValue = {
   tts: (message: string) => Promise<void>;
@@ -14,6 +15,7 @@ type SpeechContextValue = {
   onAudioPlaying: () => void;
   isSpeaking: boolean;
   isLoading: boolean;
+  chatMessages: UIMessage[];
 };
 
 export const SpeechContext = createContext<SpeechContextValue>({
@@ -26,4 +28,5 @@ export const SpeechContext = createContext<SpeechContextValue>({
   onAudioPlaying: () => {},
   isSpeaking: false,
   isLoading: false,
+  chatMessages: [],
 });

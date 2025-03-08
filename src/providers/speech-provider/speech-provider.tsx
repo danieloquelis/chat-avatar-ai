@@ -6,6 +6,8 @@ import { useTTSApi } from "@/api/tts-api";
 import { Phoneme } from "@/service/rhubarb";
 import { FacialExpression } from "@/constants/facial-expressions";
 import { AvatarAnimationType } from "@/components/avatar";
+import { useChat } from "@ai-sdk/react";
+import { generateId } from "ai";
 
 export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -17,11 +19,24 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
 
   const { trigger, isMutating } = useTTSApi();
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const { append, setMessages, messages } = useChat();
 
   const tts = useCallback(
     async (message: string) => {
-      const { facialExpression, phonemes, animation, audio } = await trigger({
-        message,
+      setMessages([
+        ...messages,
+        {
+          id: generateId(),
+          role: "user",
+          content: message,
+        },
+      ]);
+      const { facialExpression, phonemes, animation, audio, text } =
+        await trigger({ message });
+
+      await append({
+        role: "system",
+        content: text,
       });
 
       setFacialExpression(facialExpression);
@@ -29,7 +44,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
       setAnimation(animation);
       setAudioAudioBase64(audio);
     },
-    [trigger],
+    [append, messages, setMessages, trigger],
   );
 
   const onAudioPlayed = useCallback(() => {
@@ -56,6 +71,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
         phonemes,
         animation,
         audioBase64,
+        chatMessages: messages,
       }}
     >
       {children}

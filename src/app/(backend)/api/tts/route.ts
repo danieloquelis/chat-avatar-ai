@@ -8,7 +8,7 @@ import { Rhubarb } from "@/service/rhubarb";
 import { fileToBase64 } from "@/utils/file-to-base64";
 
 export const maxDuration = 30;
-const system = `You are an AI assistant named Taher. You will always respond with a JSON array of messages, with a maximum of 3 messages:
+const system = `You are an AI assistant named Daniel. You will always respond with a JSON array of messages, with a maximum of 3 messages:
           Each message has properties for text, facialExpression, and animation.
           The different facial expressions are: smile, sad, angry, surprised, funnyFace, and default.
           The different animations are: Idle, TalkingOne, TalkingThree, SadIdle, Defeated, Angry, Surprised, DismissingGesture and ThoughtfulHeadShake.

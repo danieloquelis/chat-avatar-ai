@@ -8,7 +8,7 @@ import { ChatConversation } from "@/components/chat-conversation";
 
 export const Chat: FC<ChatProps> = (props) => {
   const { hidden } = props;
-  const { tts, isLoading, isSpeaking } = useSpeech();
+  const { tts, isLoading, isSpeaking, chatMessages } = useSpeech();
   const input = useRef<HTMLTextAreaElement>(null);
 
   const submit = useCallback(
@@ -24,8 +24,8 @@ export const Chat: FC<ChatProps> = (props) => {
         return;
       }
 
-      await tts(text);
       input.current.value = "";
+      await tts(text);
     },
     [isLoading, isSpeaking, tts],
   );
@@ -38,7 +38,7 @@ export const Chat: FC<ChatProps> = (props) => {
     <div className="fixed top-0 left-0 right-0 bottom-0 z-10 flex justify-between p-4 flex-col">
       <div className="w-full flex flex-col items-end justify-center gap-4"></div>
 
-      <ChatConversation />
+      <ChatConversation messages={chatMessages} />
 
       <PromptInput
         ref={input}

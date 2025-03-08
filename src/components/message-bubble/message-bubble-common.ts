@@ -1,6 +1,6 @@
 export type MessageBubbleProps = {
   message: {
-    role: "user" | "assistant";
+    role: "user" | "assistant" | string;
     content: string;
   };
 };
