@@ -1,5 +1,7 @@
 # Chat with AI Avatar
 
+> **Thanks** to [asanchezyali](https://github.com/asanchezyali/talking-avatar-with-ai) for the initial project and research that inspired this work.
+
 A fun, experimental project that puts a **face** to all the generative AI models we use today. This repository showcases an interactive chat experience with a 3D avatar, using various modern web and AI technologies.
 
 ---
@@ -118,6 +120,7 @@ This project is open source under the [MIT License](LICENSE).
 
 ### Acknowledgments
 
+- **[asanchezyali](https://github.com/asanchezyali/talking-avatar-with-ai)** for the initial project and research that inspired this work.
 - **[Next.js](https://nextjs.org/)** for the awesome React framework.
 - **[React Three Fiber](https://github.com/pmndrs/react-three-fiber)** and **[Drei](https://github.com/pmndrs/drei)** for the great 3D abstractions in React.
 - **[gltfjsx](https://github.com/pmndrs/gltfjsx)** for automagical 3D model conversions.
