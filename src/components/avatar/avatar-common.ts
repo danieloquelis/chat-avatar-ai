@@ -1,7 +1,7 @@
 import { GLTF } from "three-stdlib";
 import * as THREE from "three";
 
-export type AvatarProps = {};
+export type AvatarProps = object;
 
 export type AvatarGLTF = GLTF & {
   nodes: {
