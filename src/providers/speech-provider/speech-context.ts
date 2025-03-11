@@ -16,6 +16,9 @@ type SpeechContextValue = {
   isSpeaking: boolean;
   isLoading: boolean;
   chatMessages: UIMessage[];
+  startConversation: () => Promise<void>;
+  stopConversation: () => Promise<void>;
+  isConversationStarted: boolean;
 };
 
 export const SpeechContext = createContext<SpeechContextValue>({
@@ -29,4 +32,7 @@ export const SpeechContext = createContext<SpeechContextValue>({
   isSpeaking: false,
   isLoading: false,
   chatMessages: [],
+  startConversation: async () => {},
+  stopConversation: async () => {},
+  isConversationStarted: false,
 });

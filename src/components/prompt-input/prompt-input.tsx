@@ -7,9 +7,8 @@ import { Mic, Send } from "lucide-react";
 export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
   (props, ref) => {
     const {
-      isLoading,
-      isRecording,
-      isSpeaking,
+      isDisabled,
+      isConversationStarted,
       startRecording,
       stopRecording,
       handleSubmit,
@@ -33,16 +32,16 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
             onKeyDown={handleKeyDown}
             placeholder="Ask something to the avatar..."
             className="min-h-[80px] resize-none pr-20 py-4 bg-transparent placeholder:text-gray"
-            disabled={isLoading || isSpeaking}
+            disabled={isDisabled}
           />
           <div className="absolute right-2 bottom-2 flex items-center gap-2">
             <Button
               type="button"
               size="icon"
               variant="ghost"
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`rounded-full ${isRecording ? "text-red-500" : ""}`}
-              disabled={isLoading || isSpeaking}
+              onClick={isConversationStarted ? stopRecording : startRecording}
+              className={`rounded-full ${isConversationStarted ? "text-red-500" : ""}`}
+              disabled={!isConversationStarted && isDisabled}
             >
               <Mic className="h-5 w-5" />
             </Button>
@@ -50,7 +49,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
               type="submit"
               size="icon"
               className="rounded-full"
-              disabled={isLoading || isSpeaking}
+              disabled={isDisabled}
             >
               <Send className="h-5 w-5" />
             </Button>

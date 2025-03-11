@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, PropsWithChildren, useCallback, useState } from "react";
+import { FC, PropsWithChildren, useCallback, useEffect, useState } from "react";
 import { SpeechContext } from "./speech-context";
 import { useTTSApi } from "@/api/tts-api";
 import { Phoneme } from "@/service/rhubarb";
@@ -8,6 +8,7 @@ import { FacialExpression } from "@/constants/facial-expressions";
 import { AvatarAnimationType } from "@/components/avatar";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
+import { Role, useConversation } from "@11labs/react";
 
 export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -19,7 +20,42 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
 
   const { trigger, isMutating } = useTTSApi();
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isConversationStarted, setIsConversationStarted] = useState(false);
   const { append, setMessages, messages } = useChat();
+  const conversation = useConversation({
+    onConnect: () => setIsConversationStarted(true),
+    onMessage: async (payload: { message: string; source: Role }) => {
+      const { message, source } = payload;
+      await append({
+        role: source === "ai" ? "system" : "user",
+        content: message,
+      });
+    },
+    onDisconnect: () => setIsConversationStarted(false),
+  });
+
+  useEffect(() => {
+    if (conversation.status !== "connected") return;
+    setIsSpeaking(conversation.isSpeaking);
+  }, [conversation.isSpeaking, conversation.status]);
+
+  const startConversation = useCallback(async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      await conversation.startSession({
+        agentId: process.env.ELEVEN_LABS_AGENT_ID,
+      });
+    } catch (error) {
+      console.error(
+        "[startConversation]",
+        `Failed to start conversation: ${error}`,
+      );
+    }
+  }, [conversation]);
+
+  const stopConversation = useCallback(async () => {
+    await conversation.endSession();
+  }, [conversation]);
 
   const tts = useCallback(
     async (message: string) => {
@@ -72,6 +108,9 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
         animation,
         audioBase64,
         chatMessages: messages,
+        startConversation,
+        stopConversation,
+        isConversationStarted,
       }}
     >
       {children}

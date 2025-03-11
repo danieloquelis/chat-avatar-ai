@@ -5,6 +5,24 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
+"@11labs/client@npm:0.0.7":
+  version: 0.0.7
+  resolution: "@11labs/client@npm:0.0.7"
+  checksum: 10c0/31a961486c3ea23cbc20eea8910f80334b810181a3f9538d299f98aaade4c338879851ffbdbca1b36953336bade27b9f86bfde0157d5af5b60a6a14f84da9650
+  languageName: node
+  linkType: hard
+
+"@11labs/react@npm:^0.0.7":
+  version: 0.0.7
+  resolution: "@11labs/react@npm:0.0.7"
+  dependencies:
+    "@11labs/client": "npm:0.0.7"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 10c0/9ac253e80d1a8ddcbe0482114d724d1710c09c43e12be83f6b05d676406f548cbb5ab0de9b741def5d789b734ac71b62fce2f52215c41037f5a297b36b106d67
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/openai@npm:^1.2.1":
   version: 1.2.1
   resolution: "@ai-sdk/openai@npm:1.2.1"
@@ -1636,13 +1654,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"add@npm:^2.0.6":
-  version: 2.0.6
-  resolution: "add@npm:2.0.6"
-  checksum: 10c0/6b21d5f2e58cf5e15d56cc6f9ebce04f04f4c33ae25f09d600ddacf8df00036ba521f17feb1b3f81307b7c6d2ef0bed8b511a0f86f062eb90c2f909b48b588ae
-  languageName: node
-  linkType: hard
-
 "ai@npm:^4.1.54":
   version: 4.1.54
   resolution: "ai@npm:4.1.54"
@@ -2022,6 +2033,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "chat-avatar-ai@workspace:."
   dependencies:
+    "@11labs/react": "npm:^0.0.7"
     "@ai-sdk/openai": "npm:^1.2.1"
     "@eslint/eslintrc": "npm:^3"
     "@radix-ui/react-avatar": "npm:^1.1.3"
@@ -2035,7 +2047,6 @@ __metadata:
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
     "@types/three": "npm:^0.174.0"
-    add: "npm:^2.0.6"
     ai: "npm:^4.1.54"
     class-variance-authority: "npm:^0.7.1"
     clsx: "npm:^2.1.1"

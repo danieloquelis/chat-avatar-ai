@@ -8,7 +8,16 @@ import { ChatConversation } from "@/components/chat-conversation";
 
 export const Chat: FC<ChatProps> = (props) => {
   const { hidden } = props;
-  const { tts, isLoading, isSpeaking, chatMessages } = useSpeech();
+  const {
+    tts,
+    isLoading,
+    isSpeaking,
+    chatMessages,
+    isConversationStarted,
+    startConversation,
+    stopConversation,
+  } = useSpeech();
+  const isPromptDisabled = isLoading || isSpeaking || isConversationStarted;
   const input = useRef<HTMLTextAreaElement>(null);
 
   const submit = useCallback(
@@ -48,11 +57,10 @@ export const Chat: FC<ChatProps> = (props) => {
 
       <PromptInput
         ref={input}
-        isLoading={isLoading}
-        isSpeaking={isSpeaking}
-        isRecording={false}
-        startRecording={() => {}}
-        stopRecording={() => {}}
+        isDisabled={isPromptDisabled}
+        isConversationStarted={isConversationStarted}
+        startRecording={startConversation}
+        stopRecording={stopConversation}
         handleSubmit={submit}
       />
     </div>
