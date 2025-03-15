@@ -8,6 +8,7 @@ import { FacialExpression } from "@/constants/facial-expressions";
 import { AvatarAnimationType } from "@/components/avatar";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
+import { ElevenLabs } from "@/service/eleven-labs";
 
 export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -20,6 +21,25 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const { trigger, isMutating } = useTTSApi();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const { append, setMessages, messages } = useChat();
+
+  const { startConversation, stopConversation, status } =
+    ElevenLabs.useAgentConversation({
+      agentId: process.env.ELEVEN_LABS_AGENT_ID!,
+      onAgentEvent: async (event) => {
+        if (event.type === "transcription") {
+          await append({
+            role: "system",
+            content: event.transcription,
+          });
+        }
+      },
+      onUserEvent: async (event) => {
+        await append({
+          role: "user",
+          content: event.transcription,
+        });
+      },
+    });
 
   const tts = useCallback(
     async (message: string) => {
@@ -72,6 +92,9 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
         animation,
         audioBase64,
         chatMessages: messages,
+        startConversation,
+        stopConversation,
+        hasConversationStarted: status === "connected",
       }}
     >
       {children}

@@ -1,10 +1,9 @@
 import { FormEvent } from "react";
 
 export type PromptInputProps = {
-  isLoading: boolean;
-  isRecording: boolean;
-  isSpeaking: boolean;
-  startRecording: () => void;
-  stopRecording: () => void;
+  isDisabled: boolean;
+  hasConversationStarted: boolean;
+  startRecording: () => Promise<void>;
+  stopRecording: () => Promise<void>;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
