@@ -39,7 +39,10 @@ const sendMessage = (
 };
 
 const getAgentWebsocketUrl = (agentId: string) => {
-  const agentWebsocketUrl = "wss://api.elevenlabs.io/v1/convai/conversation"; //process.env.ELEVEN_LABS_AGENT_WEBSOCKET_URL!;
+  const agentWebsocketUrl = process.env.ELEVEN_LABS_AGENT_WEBSOCKET_URL;
+  if (!agentWebsocketUrl) {
+    throw new Error("[getAgentWebsocketUrl] Cannot find websocket url");
+  }
   return agentWebsocketUrl + `?agent_id=${agentId}`;
 };
 
@@ -48,11 +51,12 @@ const useAgentConversation = (options: UseAgentConversationOptions) => {
   const websocketRef = useRef<WebSocket>(null);
   const eventIdRef = useRef<number>(null);
   const [status, setStatus] = useState<AgentConversationStatus>("disconnected");
-  const { playAudio, isPlaying } = usePcmPlayer();
+  const { playAudio, isPlaying, clearStream } = usePcmPlayer();
   const { startStreaming, stopStreaming } = useVoiceStream({
     onAudioChunked: (audioData) => {
-      console.log("Speaking...");
-      sendMessage(websocketRef.current!, {
+      if (!websocketRef.current) return;
+
+      sendMessage(websocketRef.current, {
         user_audio_chunk: audioData,
       });
     },
@@ -75,8 +79,6 @@ const useAgentConversation = (options: UseAgentConversationOptions) => {
     };
 
     websocket.onmessage = async (event) => {
-      console.info("[AgentWebsocket] Raw Event ===>", event);
-
       const data = JSON.parse(event.data) as ElevenLabsWebSocketEvent;
 
       if (data.type === "ping") {
@@ -85,7 +87,6 @@ const useAgentConversation = (options: UseAgentConversationOptions) => {
             type: "pong",
             event_id: data.ping_event.event_id,
           });
-          console.log("Pong...");
         }, data.ping_event.ping_ms);
       }
 
@@ -102,6 +103,10 @@ const useAgentConversation = (options: UseAgentConversationOptions) => {
           type: "transcription",
           transcription: agent_response_event.agent_response,
         });
+      }
+
+      if (data.type === "interruption") {
+        clearStream();
       }
 
       if (data.type === "audio") {
@@ -126,10 +131,12 @@ const useAgentConversation = (options: UseAgentConversationOptions) => {
       setStatus("disconnected");
       console.info("[AgentWebsocket]", "Connection closed...");
       stopStreaming();
+      clearStream();
       if (!!onClosed) await onClosed();
     };
   }, [
     agentId,
+    clearStream,
     onAgentEvent,
     onClosed,
     onConnected,

@@ -8,7 +8,7 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
   (props, ref) => {
     const {
       isDisabled,
-      isConversationStarted,
+      hasConversationStarted,
       startRecording,
       stopRecording,
       handleSubmit,
@@ -39,9 +39,9 @@ export const PromptInput = forwardRef<HTMLTextAreaElement, PromptInputProps>(
               type="button"
               size="icon"
               variant="ghost"
-              onClick={isConversationStarted ? stopRecording : startRecording}
-              className={`rounded-full ${isConversationStarted ? "text-red-500" : ""}`}
-              disabled={!isConversationStarted && isDisabled}
+              onClick={hasConversationStarted ? stopRecording : startRecording}
+              className={`rounded-full ${hasConversationStarted ? "text-red-500" : ""}`}
+              disabled={!hasConversationStarted && isDisabled}
             >
               <Mic className="h-5 w-5" />
             </Button>

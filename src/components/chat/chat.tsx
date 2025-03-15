@@ -13,11 +13,11 @@ export const Chat: FC<ChatProps> = (props) => {
     isLoading,
     isSpeaking,
     chatMessages,
-    isConversationStarted,
+    hasConversationStarted,
     startConversation,
     stopConversation,
   } = useSpeech();
-  const isPromptDisabled = isLoading || isSpeaking || isConversationStarted;
+  const isPromptDisabled = isLoading || isSpeaking || hasConversationStarted;
   const input = useRef<HTMLTextAreaElement>(null);
 
   const submit = useCallback(
@@ -58,7 +58,7 @@ export const Chat: FC<ChatProps> = (props) => {
       <PromptInput
         ref={input}
         isDisabled={isPromptDisabled}
-        isConversationStarted={isConversationStarted}
+        hasConversationStarted={hasConversationStarted}
         startRecording={startConversation}
         stopRecording={stopConversation}
         handleSubmit={submit}
