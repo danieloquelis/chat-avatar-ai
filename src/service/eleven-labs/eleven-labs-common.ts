@@ -3,7 +3,8 @@ export type ConvertTextToSpeechOptions = {
 };
 
 export type UseAgentConversationOptions = {
-  agentId: string;
+  agentId?: string;
+  agentUrl?: string;
   onConnected?: () => Promise<void>;
   onClosed?: () => Promise<void>;
   onUserEvent?: (event: UserEvent) => Promise<void>;
