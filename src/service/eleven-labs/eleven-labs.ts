@@ -1,3 +1,4 @@
+"use client";
 import { ElevenLabsClient } from "elevenlabs";
 import {
   AgentConversationStatus,
