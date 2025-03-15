@@ -1370,6 +1370,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/audioworklet@npm:^0.0.71":
+  version: 0.0.71
+  resolution: "@types/audioworklet@npm:0.0.71"
+  checksum: 10c0/b0719749b4326122d6abd9192a3a08745e2c4bd5fc1ceb65bacbbbb6d2450fb36d224cfd56fee6443f737c3da91b2128cc48ac13c624c739da8f50885b05ec0c
+  languageName: node
+  linkType: hard
+
 "@types/diff-match-patch@npm:^1.0.36":
   version: 1.0.36
   resolution: "@types/diff-match-patch@npm:1.0.36"
@@ -2043,6 +2050,7 @@ __metadata:
     "@react-three/xr": "npm:^6.6.8"
     "@tailwindcss/postcss": "npm:^4"
     "@types/add": "npm:^2"
+    "@types/audioworklet": "npm:^0.0.71"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"

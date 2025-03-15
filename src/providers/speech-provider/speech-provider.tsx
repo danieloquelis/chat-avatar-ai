@@ -9,6 +9,7 @@ import { AvatarAnimationType } from "@/components/avatar";
 import { useChat } from "@ai-sdk/react";
 import { generateId } from "ai";
 import { Role, useConversation } from "@11labs/react";
+import { ElevenLabs } from "@/service/eleven-labs";
 
 export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const { children } = props;
@@ -22,40 +23,47 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isConversationStarted, setIsConversationStarted] = useState(false);
   const { append, setMessages, messages } = useChat();
-  const conversation = useConversation({
-    onConnect: () => setIsConversationStarted(true),
-    onMessage: async (payload: { message: string; source: Role }) => {
-      const { message, source } = payload;
-      await append({
-        role: source === "ai" ? "system" : "user",
-        content: message,
-      });
-    },
-    onDisconnect: () => setIsConversationStarted(false),
-  });
+  // const conversation = useConversation({
+  //   onConnect: () => setIsConversationStarted(true),
+  //   onMessage: async (payload: { message: string; source: Role }) => {
+  //     const { message, source } = payload;
+  //     await append({
+  //       role: source === "ai" ? "system" : "user",
+  //       content: message,
+  //     });
+  //   },
+  //   onDisconnect: () => setIsConversationStarted(false),
+  // });
 
-  useEffect(() => {
-    if (conversation.status !== "connected") return;
-    setIsSpeaking(conversation.isSpeaking);
-  }, [conversation.isSpeaking, conversation.status]);
+  const { startConversation, stopConversation, status } =
+    ElevenLabs.useAgentConversation({
+      agentId: "cdY8NbrSKrVhrtMOKX9c",
+    });
 
-  const startConversation = useCallback(async () => {
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      await conversation.startSession({
-        agentId: process.env.ELEVEN_LABS_AGENT_ID,
-      });
-    } catch (error) {
-      console.error(
-        "[startConversation]",
-        `Failed to start conversation: ${error}`,
-      );
-    }
-  }, [conversation]);
-
-  const stopConversation = useCallback(async () => {
-    await conversation.endSession();
-  }, [conversation]);
+  // useEffect(() => {
+  //   if (conversation.status !== "connected") return;
+  //   setIsSpeaking(conversation.isSpeaking);
+  // }, [conversation.isSpeaking, conversation.status]);
+  //
+  // const startConversation = useCallback(async () => {
+  //   try {
+  //     await navigator.mediaDevices.getUserMedia({ audio: true });
+  //     await openWebsocket();
+  //     await conversation.startSession({
+  //       agentId: "cdY8NbrSKrVhrtMOKX9c", //process.env.ELEVEN_LABS_AGENT_ID,
+  //     });
+  //   } catch (error) {
+  //     console.error(
+  //       "[startConversation]",
+  //       `Failed to start conversation: ${JSON.stringify(error)}`,
+  //     );
+  //   }
+  // }, [conversation, openWebsocket]);
+  //
+  // const stopConversation = useCallback(async () => {
+  //   await conversation.endSession();
+  //   await closeWebsocket();
+  // }, [closeWebsocket, conversation]);
 
   const tts = useCallback(
     async (message: string) => {
@@ -110,7 +118,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
         chatMessages: messages,
         startConversation,
         stopConversation,
-        isConversationStarted,
+        isConversationStarted: status === "connected",
       }}
     >
       {children}
