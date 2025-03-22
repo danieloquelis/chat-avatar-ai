@@ -8,12 +8,12 @@ import {
 } from "@/service/eleven-labs/eleven-labs-common";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePcmPlayer } from "@/hooks/use-pcm-player";
-import { useVoiceStream } from "@/hooks/use-voice-stream";
 import { ElevenLabs } from "./eleven-labs";
+import { useVoiceStream } from "voice-stream";
 
 const sendMessage = (
   websocket: WebSocket,
-  request: ElevenLabsWebSocketRequest,
+  request: ElevenLabsWebSocketRequest
 ) => {
   if (websocket.readyState !== WebSocket.OPEN) {
     return;
@@ -50,7 +50,7 @@ export const useAgentConversation = (options: UseAgentConversationOptions) => {
     const websocketUrl =
       agentUrl ??
       (await ElevenLabs.getAgentWebsocketUrl(
-        agentId ?? process.env.NEXT_PUBLIC_ELEVEN_LABS_AGENT_ID!,
+        agentId ?? process.env.NEXT_PUBLIC_ELEVEN_LABS_AGENT_ID!
       ));
 
     const websocket = new WebSocket(websocketUrl);
