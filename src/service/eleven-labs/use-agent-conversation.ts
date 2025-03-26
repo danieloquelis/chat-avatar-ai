@@ -33,7 +33,7 @@ export const useAgentConversation = (options: UseAgentConversationOptions) => {
   const websocketRef = useRef<WebSocket>(null);
   const eventIdRef = useRef<number>(null);
   const [status, setStatus] = useState<AgentConversationStatus>("disconnected");
-  const { playAudio, isPlaying, clearStream } = usePcmPlayer();
+  const { playAudio, isPlaying, stopAudio } = usePcmPlayer();
   const { startStreaming, stopStreaming } = useVoiceStream({
     onAudioChunked: (audioData) => {
       if (!websocketRef.current) return;
@@ -93,7 +93,7 @@ export const useAgentConversation = (options: UseAgentConversationOptions) => {
       }
 
       if (data.type === "interruption") {
-        clearStream();
+        stopAudio();
       }
 
       if (data.type === "audio") {
@@ -118,11 +118,11 @@ export const useAgentConversation = (options: UseAgentConversationOptions) => {
       setStatus("disconnected");
       console.info("[AgentWebsocket]", "Connection closed...");
       stopStreaming();
-      clearStream();
+      stopAudio();
       if (!!onClosed) await onClosed();
     };
   }, [
-    clearStream,
+    stopAudio,
     onAgentEvent,
     onClosed,
     onConnected,

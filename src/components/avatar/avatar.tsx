@@ -14,6 +14,7 @@ import { useAvatarModel } from "./use-avatar-model";
 import { useAvatarAnimations } from "./use-avatar-animations";
 import { isSkinnedMesh } from "@/utils/is-skinned-mesh";
 import { SkinnedMesh } from "three";
+import { usePcmPlayer } from "@/hooks/use-pcm-player";
 
 export const Avatar: FC<AvatarProps> = (props) => {
   const { nodes, materials, scene } = useAvatarModel();
@@ -28,8 +29,11 @@ export const Avatar: FC<AvatarProps> = (props) => {
   } = useSpeech();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const skinnedMeshesRef = useRef<SkinnedMesh[]>([]);
+  const { playAudio, stopAudio, isPlaying, currentTime } = usePcmPlayer({
+    onAudioPlayed,
+    onAudioPlaying,
+  });
 
   useEffect(() => {
     const skinnedMeshes: SkinnedMesh[] = [];
@@ -42,29 +46,17 @@ export const Avatar: FC<AvatarProps> = (props) => {
   }, [scene]);
 
   useEffect(() => {
-    if (!audioBase64) {
+    if (!audioBase64 || isPlaying) {
       return;
     }
 
-    // Stop any previous audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-
-    const audio = new Audio("data:audio/mp3;base64," + audioBase64);
-    audioRef.current = audio;
-
-    audio.onended = onAudioPlayed;
-    audio.onplaying = onAudioPlaying;
-    audio.play();
+    playAudio(audioBase64);
 
     // Cleanup if needed
     return () => {
-      audio.pause();
-      audioRef.current = null;
+      stopAudio();
     };
-  }, [audioBase64, onAudioPlayed, onAudioPlaying]);
+  }, [audioBase64]);
 
   useEffect(() => {
     if (!actions[animation]) {
@@ -96,11 +88,11 @@ export const Avatar: FC<AvatarProps> = (props) => {
         mesh.morphTargetInfluences[index] = THREE.MathUtils.lerp(
           current,
           value,
-          speed,
+          speed
         );
       }
     },
-    [],
+    []
   );
 
   useFrame(() => {
@@ -124,14 +116,10 @@ export const Avatar: FC<AvatarProps> = (props) => {
     });
 
     const appliedMorphTargets: MorphTarget[] = [];
-    if (phonemes && audioRef?.current) {
-      const currentAudioTime = audioRef.current.currentTime ?? 0;
+    if (phonemes && isPlaying) {
       for (let i = 0; i < phonemes.mouthCues.length; i++) {
         const mouthCue = phonemes.mouthCues[i];
-        if (
-          currentAudioTime >= mouthCue.start &&
-          currentAudioTime <= mouthCue.end
-        ) {
+        if (currentTime >= mouthCue.start && currentTime <= mouthCue.end) {
           appliedMorphTargets.push(visemesMapping[mouthCue.value]);
 
           lerpMorphTarget(visemesMapping[mouthCue.value], 1, 0.2);
@@ -175,9 +163,9 @@ export const Avatar: FC<AvatarProps> = (props) => {
                 lerpMorphTarget(key, val, 0.1);
               },
             },
-          })),
+          }))
         )
-      : {},
+      : {}
   );
 
   useEffect(() => {
@@ -191,7 +179,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
             nextBlink();
           }, 200);
         },
-        THREE.MathUtils.randInt(1000, 5000),
+        THREE.MathUtils.randInt(1000, 5000)
       );
     };
     nextBlink();

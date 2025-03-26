@@ -20,6 +20,7 @@ const convertTextToSpeech = async (options: ConvertTextToSpeechOptions) => {
 
   return getClient().textToSpeech.convertAsStream(voiceId, {
     text,
+    output_format: "pcm_16000",
     voice_settings: {
       stability: 0.5,
       similarity_boost: 0.5,

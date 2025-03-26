@@ -33,6 +33,10 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
           content: event.transcription,
         });
       }
+
+      if (event.type === "audio") {
+        console.log("audio", event.audioBase64);
+      }
     },
     onUserEvent: async (event) => {
       await append({
@@ -70,7 +74,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
       setAnimation(animation);
       setAudioAudioBase64(audio);
     },
-    [append, error, messages, setMessages, trigger],
+    [append, error, messages, setMessages, trigger]
   );
 
   const onAudioPlayed = useCallback(() => {

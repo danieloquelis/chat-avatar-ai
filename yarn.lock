@@ -2096,6 +2096,7 @@ __metadata:
     prettier: "npm:^3.5.3"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
+    rhubarb-lip-sync-wasm: "npm:^0.1.7"
     swr: "npm:^2.3.3"
     tailwind-merge: "npm:^3.0.2"
     tailwind-scrollbar: "npm:^4.0.1"
@@ -4800,6 +4801,13 @@ __metadata:
   version: 1.1.0
   resolution: "reusify@npm:1.1.0"
   checksum: 10c0/4eff0d4a5f9383566c7d7ec437b671cc51b25963bd61bf127c3f3d3f68e44a026d99b8d2f1ad344afff8d278a8fe70a8ea092650a716d22287e8bef7126bb2fa
+  languageName: node
+  linkType: hard
+
+"rhubarb-lip-sync-wasm@npm:^0.1.7":
+  version: 0.1.7
+  resolution: "rhubarb-lip-sync-wasm@npm:0.1.7"
+  checksum: 10c0/c6659fb2dd2be96cb0238432b43fb964f083d0aaaa0f9b627277d75c485a35f889fa33eddc99250d5c40f2c1d1379e870d0f65fc6447b59c3ded8707dfb218d0
   languageName: node
   linkType: hard
 
