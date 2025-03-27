@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { ElevenLabs } from "@/service/eleven-labs";
-import { Rhubarb } from "rhubarb-lip-sync-wasm";
 import { streamToPcm } from "@/utils/stream-to-pcm";
 
 export const maxDuration = 30;
@@ -56,19 +55,9 @@ export async function POST(req: Request) {
     const pcmBuffer = await streamToPcm(speechAsStream);
     const audioBase64 = pcmBuffer.toString("base64");
 
-    const phonemes = await Rhubarb.getLipSync(pcmBuffer, {
-      dialogText: result.text,
-    });
-
-    if (!phonemes) {
-      console.error("[Api /api/tts]", "Did not find phonemes");
-      return NextResponse.json({ status: 500 });
-    }
-
     return NextResponse.json({
       ...result,
-      audio: audioBase64,
-      phonemes,
+      audioBase64,
     });
   } catch (error) {
     console.error("Error in streaming route:", error);

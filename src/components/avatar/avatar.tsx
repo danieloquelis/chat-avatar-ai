@@ -14,7 +14,6 @@ import { useAvatarModel } from "./use-avatar-model";
 import { useAvatarAnimations } from "./use-avatar-animations";
 import { isSkinnedMesh } from "@/utils/is-skinned-mesh";
 import { SkinnedMesh } from "three";
-import { usePcmPlayer } from "@/hooks/use-pcm-player";
 
 export const Avatar: FC<AvatarProps> = (props) => {
   const { nodes, materials, scene } = useAvatarModel();
@@ -24,16 +23,12 @@ export const Avatar: FC<AvatarProps> = (props) => {
     facialExpression,
     audioBase64,
     animation,
-    onAudioPlayed,
-    onAudioPlaying,
+    isSpeaking,
+    currentTime,
   } = useSpeech();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
   const skinnedMeshesRef = useRef<SkinnedMesh[]>([]);
-  const { playAudio, stopAudio, isPlaying, currentTime } = usePcmPlayer({
-    onAudioPlayed,
-    onAudioPlaying,
-  });
 
   useEffect(() => {
     const skinnedMeshes: SkinnedMesh[] = [];
@@ -45,18 +40,18 @@ export const Avatar: FC<AvatarProps> = (props) => {
     skinnedMeshesRef.current = skinnedMeshes;
   }, [scene]);
 
-  useEffect(() => {
-    if (!audioBase64 || isPlaying) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!audioBase64 || isSpeaking) {
+  //     return;
+  //   }
 
-    playAudio(audioBase64);
+  //   playAudio(audioBase64);
 
-    // Cleanup if needed
-    return () => {
-      stopAudio();
-    };
-  }, [audioBase64]);
+  //   // Cleanup if needed
+  //   return () => {
+  //     stopAudio();
+  //   };
+  // }, [audioBase64]);
 
   useEffect(() => {
     if (!actions[animation]) {
@@ -116,7 +111,7 @@ export const Avatar: FC<AvatarProps> = (props) => {
     });
 
     const appliedMorphTargets: MorphTarget[] = [];
-    if (phonemes && isPlaying) {
+    if (phonemes && isSpeaking) {
       for (let i = 0; i < phonemes.mouthCues.length; i++) {
         const mouthCue = phonemes.mouthCues[i];
         if (currentTime >= mouthCue.start && currentTime <= mouthCue.end) {

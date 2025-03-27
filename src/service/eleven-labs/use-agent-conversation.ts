@@ -100,12 +100,11 @@ export const useAgentConversation = (options: UseAgentConversationOptions) => {
         const { audio_event } = data;
 
         eventIdRef.current = audio_event.event_id;
-        playAudio(audio_event.audio_base_64);
-
         if (onAgentEvent) {
           await onAgentEvent({
             type: "audio",
             audioBase64: audio_event.audio_base_64,
+            eventId: audio_event.event_id,
           });
         }
       }
