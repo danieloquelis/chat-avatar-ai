@@ -37,6 +37,7 @@ export function useLipSyncManager() {
   const sequenceRef = useRef<number>(0);
   const lastPlayedSequenceRef = useRef<number>(-1);
   const activeProcessesRef = useRef<number>(0);
+  const expectedChunksRef = useRef<number>(0); // New counter for expected chunks
 
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [phonemes, setPhonemes] = useState<Phoneme>();
@@ -66,12 +67,21 @@ export function useLipSyncManager() {
 
   const processChunk = useCallback(async (item: PlaybackItem) => {
     try {
+      console.log("[LipSync] Starting to process chunk:", {
+        sequence: item.sequence,
+      });
       const mouthCues = await item.mouthCuesPromise;
       readyQueueRef.current.push({
         audioBase64: item.audioBase64,
         mouthCues,
         sequence: item.sequence,
         timestamp: item.timestamp,
+      });
+
+      console.log("[LipSync] Chunk processed and added to ready queue:", {
+        sequence: item.sequence,
+        readyQueueLength: readyQueueRef.current.length,
+        expectedChunks: expectedChunksRef.current,
       });
 
       // Sort ready queue by sequence number
@@ -82,19 +92,36 @@ export function useLipSyncManager() {
       const oldestChunk = readyQueueRef.current[0];
       const timeSinceOldest = now - oldestChunk.timestamp;
 
+      console.log("[LipSync] Checking playback conditions:", {
+        readyQueueLength: readyQueueRef.current.length,
+        expectedChunks: expectedChunksRef.current,
+        timeSinceOldest,
+        bufferWindow: BUFFER_WINDOW_MS,
+      });
+
+      // If this is the first chunk and we know it's the only one coming, or we have enough chunks, or enough time has passed
       if (
+        (readyQueueRef.current.length === 1 &&
+          expectedChunksRef.current === 1) || // Single chunk case
         readyQueueRef.current.length >= 2 ||
         timeSinceOldest >= BUFFER_WINDOW_MS
       ) {
+        console.log("[LipSync] Playback conditions met, starting playback");
         if (firstChunkTimeoutRef.current) {
           clearTimeout(firstChunkTimeoutRef.current);
         }
         maybeStartNextPlayback();
       }
     } catch (error) {
-      console.error("Error processing chunk:", error);
+      console.error("[LipSync] Error processing chunk:", error);
     } finally {
       activeProcessesRef.current--;
+      console.log("[LipSync] Chunk processing completed:", {
+        sequence: item.sequence,
+        activeProcesses: activeProcessesRef.current,
+        processingQueueLength: processingQueueRef.current.length,
+        expectedChunks: expectedChunksRef.current,
+      });
       // Try to process more chunks if we have capacity
       if (
         processingQueueRef.current.length > 0 &&
@@ -109,16 +136,30 @@ export function useLipSyncManager() {
     if (
       processingQueueRef.current.length === 0 ||
       activeProcessesRef.current >= PARALLEL_PROCESSING_LIMIT
-    )
+    ) {
+      console.log("[LipSync] Skipping processNextChunk:", {
+        queueEmpty: processingQueueRef.current.length === 0,
+        activeProcesses: activeProcessesRef.current,
+        parallelLimit: PARALLEL_PROCESSING_LIMIT,
+      });
       return;
+    }
 
     const nextItem = processingQueueRef.current.shift()!;
     activeProcessesRef.current++;
 
+    console.log("[LipSync] Processing next chunk:", {
+      sequence: nextItem.sequence,
+      activeProcesses: activeProcessesRef.current,
+      isFirstChunk: isFirstChunkRef.current,
+    });
+
     // If this is the first chunk, start a timeout to wait for the second chunk
     if (isFirstChunkRef.current) {
       isFirstChunkRef.current = false;
+      console.log("[LipSync] Setting first chunk timeout");
       firstChunkTimeoutRef.current = setTimeout(() => {
+        console.log("[LipSync] First chunk timeout triggered");
         if (readyQueueRef.current.length === 1) {
           maybeStartNextPlayback();
         }
@@ -132,9 +173,17 @@ export function useLipSyncManager() {
   const handleAudioChunk = useCallback(
     (options: HandleAudioChunkOptions) => {
       const { eventId, audioBase64 } = options;
+      console.log("[LipSync] Received chunk:", {
+        eventId,
+        sequence: sequenceRef.current,
+      });
 
       // Clear queues if eventId is undefined or different from current
       if (eventId === undefined || eventId !== currentEventIdRef.current) {
+        console.log("[LipSync] New event ID detected, clearing queues:", {
+          oldEventId: currentEventIdRef.current,
+          newEventId: eventId,
+        });
         processingQueueRef.current = [];
         readyQueueRef.current = [];
         if (firstChunkTimeoutRef.current) {
@@ -145,26 +194,40 @@ export function useLipSyncManager() {
         sequenceRef.current = 0;
         lastPlayedSequenceRef.current = -1;
         activeProcessesRef.current = 0;
+        expectedChunksRef.current = 0; // Reset expected chunks counter
       }
 
       // Skip if we have too many chunks in buffer
       if (readyQueueRef.current.length >= MAX_BUFFER_SIZE) {
-        console.warn("Buffer full, dropping chunk");
+        console.warn("[LipSync] Buffer full, dropping chunk");
         return;
       }
 
+      expectedChunksRef.current++; // Increment expected chunks counter
+
+      console.log("[LipSync] Starting lip sync API call");
       const mouthCuesPromise = fetch("/api/lip-sync", {
         method: "POST",
         body: JSON.stringify({ audioPayload: audioBase64 }),
       })
         .then((res) => res.json())
-        .then((data) => data.mouthCues as Phoneme);
+        .then((data) => {
+          console.log("[LipSync] Received mouth cues from API");
+          return data.mouthCues as Phoneme;
+        });
 
       processingQueueRef.current.push({
         audioBase64,
         mouthCuesPromise,
         sequence: sequenceRef.current++,
         timestamp: Date.now(),
+      });
+
+      console.log("[LipSync] Added to processing queue:", {
+        queueLength: processingQueueRef.current.length,
+        activeProcesses: activeProcessesRef.current,
+        parallelLimit: PARALLEL_PROCESSING_LIMIT,
+        expectedChunks: expectedChunksRef.current,
       });
 
       // Start processing if we have capacity
@@ -176,11 +239,21 @@ export function useLipSyncManager() {
   );
 
   const maybeStartNextPlayback = useCallback(async () => {
-    if (isPlayingRef.current || readyQueueRef.current.length === 0) return;
+    if (isPlayingRef.current || readyQueueRef.current.length === 0) {
+      console.log("[LipSync] Skipping playback:", {
+        isPlaying: isPlayingRef.current,
+        readyQueueLength: readyQueueRef.current.length,
+      });
+      return;
+    }
 
     // Check if the next chunk is in sequence
     const nextItem = readyQueueRef.current[0];
     if (nextItem.sequence !== lastPlayedSequenceRef.current + 1) {
+      console.log("[LipSync] Sequence mismatch:", {
+        expected: lastPlayedSequenceRef.current + 1,
+        actual: nextItem.sequence,
+      });
       // If we're not playing and have a gap, try to process more chunks
       if (!isPlayingRef.current && processingQueueRef.current.length > 0) {
         processNextChunk();
@@ -194,6 +267,8 @@ export function useLipSyncManager() {
       const { audioBase64, mouthCues, sequence } =
         readyQueueRef.current.shift()!;
       lastPlayedSequenceRef.current = sequence;
+
+      console.log("[LipSync] Starting playback:", { sequence });
 
       setFacialExpression("smile");
       setPhonemes(mouthCues);
@@ -210,7 +285,7 @@ export function useLipSyncManager() {
 
       await playAudio(audioBase64);
     } catch (error) {
-      console.error("Error playing audio:", error);
+      console.error("[LipSync] Error playing audio:", error);
       isPlayingRef.current = false;
     }
   }, [playAudio, processNextChunk]);
