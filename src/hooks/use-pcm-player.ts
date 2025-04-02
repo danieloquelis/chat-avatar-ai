@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
   const binaryString = atob(base64);
@@ -18,135 +18,96 @@ type UsePcmPlayerOptions = {
 export const usePcmPlayer = (options: UsePcmPlayerOptions = {}) => {
   const { onAudioPlaying, onAudioPlayed } = options;
 
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-
-  const queue = useRef<string[]>([]);
-  const isProcessing = useRef(false);
-  const currentSource = useRef<AudioBufferSourceNode | null>(null);
-
-  // Store the total duration of the current PCM chunk (in seconds).
+  const [currentTime, setCurrentTime] = useState(0);
   const [chunkDuration, setChunkDuration] = useState(0);
 
-  // Store how far along the current chunk we are in playback (in seconds).
-  const [currentTime, setCurrentTime] = useState(0);
-
-  // Remember when the current chunk started playing.
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
   const startTimeRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const context = new window.AudioContext({ sampleRate: 16000 });
-    setAudioContext(context);
+    const context = new AudioContext({ sampleRate: 16000 });
+    audioContextRef.current = context;
 
-    // Close the context on unmount (optional).
     return () => {
       context.close();
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
-  /**
-   * Poll the currentTime at a fixed interval if we're playing something.
-   */
-  useEffect(() => {
-    if (!isPlaying || !audioContext || startTimeRef.current == null) {
-      return;
-    }
-
-    const updateInterval = setInterval(() => {
-      if (!audioContext || startTimeRef.current == null) return;
-      const elapsed = audioContext.currentTime - startTimeRef.current;
-      setCurrentTime(Math.min(elapsed, chunkDuration));
-    }, 100); // update every 100 ms
-
-    return () => clearInterval(updateInterval);
-  }, [isPlaying, audioContext, chunkDuration]);
-
-  const processQueue = useCallback(() => {
-    if (isProcessing.current || !audioContext || queue.current.length === 0) {
-      return;
-    }
-
-    isProcessing.current = true;
-    const base64Audio = queue.current.shift();
-    if (!base64Audio) {
-      isProcessing.current = false;
-      return;
-    }
-
-    const audioBuffer = base64ToArrayBuffer(base64Audio);
-    const buffer = audioContext.createBuffer(
-      1,
-      audioBuffer.byteLength / 2, // 16-bit => 2 bytes
-      16000
-    );
-    const dataView = new DataView(audioBuffer);
-    const float32Array = buffer.getChannelData(0);
-
-    for (let i = 0; i < float32Array.length; i++) {
-      float32Array[i] = dataView.getInt16(i * 2, true) / 32768.0;
-    }
-
-    const source = audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(audioContext.destination);
-
-    // Keep a reference to the source so we can stop it if needed.
-    currentSource.current = source;
-
-    // Set durations for the chunk
-    setChunkDuration(buffer.duration);
-    setCurrentTime(0);
-
-    // Mark the start time
-    startTimeRef.current = audioContext.currentTime;
-
-    // Start playback
-    source.start();
-    setIsPlaying(true);
-    onAudioPlaying?.();
-
-    source.onended = () => {
-      setIsPlaying(false);
-
-      // Reset
-      startTimeRef.current = null;
-      setCurrentTime(0);
-      setChunkDuration(0);
-
-      currentSource.current = null;
-      isProcessing.current = false;
-      onAudioPlayed?.();
-
-      // Process next chunk
-      processQueue();
-    };
-  }, [audioContext, onAudioPlaying, onAudioPlayed]);
-
   const playAudio = useCallback(
-    (base64Audio: string) => {
-      queue.current.push(base64Audio);
-      if (!isProcessing.current) {
-        processQueue();
+    async (base64Audio: string): Promise<void> => {
+      const context = audioContextRef.current;
+      if (!context) return;
+
+      const audioBuffer = base64ToArrayBuffer(base64Audio);
+      const buffer = context.createBuffer(1, audioBuffer.byteLength / 2, 16000);
+      const dataView = new DataView(audioBuffer);
+      const float32Array = buffer.getChannelData(0);
+
+      for (let i = 0; i < float32Array.length; i++) {
+        float32Array[i] = dataView.getInt16(i * 2, true) / 32768;
       }
+
+      const source = context.createBufferSource();
+      source.buffer = buffer;
+      source.connect(context.destination);
+      sourceRef.current = source;
+
+      setChunkDuration(buffer.duration);
+      setCurrentTime(0);
+      startTimeRef.current = context.currentTime;
+      setIsPlaying(true);
+      onAudioPlaying?.();
+
+      source.start();
+
+      intervalRef.current = setInterval(() => {
+        if (startTimeRef.current != null && audioContextRef.current) {
+          const elapsed =
+            audioContextRef.current.currentTime - startTimeRef.current;
+          setCurrentTime(Math.min(elapsed, buffer.duration));
+        }
+      }, 100);
+
+      return new Promise<void>((resolve) => {
+        source.onended = () => {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+          }
+
+          setIsPlaying(false);
+          setCurrentTime(0);
+          setChunkDuration(0);
+          startTimeRef.current = null;
+          sourceRef.current = null;
+
+          onAudioPlayed?.();
+          resolve();
+        };
+      });
     },
-    [processQueue]
+    [onAudioPlaying, onAudioPlayed]
   );
 
   const stopAudio = useCallback(() => {
-    // Clear the queue and any ongoing playback
-    queue.current = [];
-    isProcessing.current = false;
-    setIsPlaying(false);
+    if (sourceRef.current) {
+      sourceRef.current.stop();
+      sourceRef.current.disconnect();
+      sourceRef.current = null;
+    }
 
-    startTimeRef.current = null;
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    setIsPlaying(false);
     setCurrentTime(0);
     setChunkDuration(0);
-
-    if (currentSource.current) {
-      currentSource.current.stop();
-      currentSource.current.disconnect();
-      currentSource.current = null;
-    }
+    startTimeRef.current = null;
 
     onAudioPlayed?.();
   }, [onAudioPlayed]);
@@ -155,7 +116,7 @@ export const usePcmPlayer = (options: UsePcmPlayerOptions = {}) => {
     playAudio,
     stopAudio,
     isPlaying,
-    chunkDuration,
     currentTime,
+    chunkDuration,
   };
 };

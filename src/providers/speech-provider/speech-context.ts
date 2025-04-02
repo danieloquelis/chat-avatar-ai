@@ -9,26 +9,22 @@ type SpeechContextValue = {
   tts: (message: string) => Promise<void>;
   facialExpression: FacialExpression;
   animation: AvatarAnimationType;
-  audioBase64: string | undefined;
   phonemes: Phoneme | undefined;
-  onAudioPlayed: () => void;
-  onAudioPlaying: () => void;
   isSpeaking: boolean;
   isLoading: boolean;
   chatMessages: UIMessage[];
   startConversation: () => Promise<void>;
   stopConversation: () => Promise<void>;
   hasConversationStarted: boolean;
+  currentTime: number;
 };
 
 export const SpeechContext = createContext<SpeechContextValue>({
   tts: async () => {},
   facialExpression: "default",
   animation: "Idle",
-  audioBase64: undefined,
   phonemes: undefined,
-  onAudioPlayed: () => {},
-  onAudioPlaying: () => {},
+  currentTime: 0,
   isSpeaking: false,
   isLoading: false,
   chatMessages: [],

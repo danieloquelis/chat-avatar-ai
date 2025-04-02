@@ -23,6 +23,7 @@ export type AgentEvent =
   | {
       type: "audio";
       audioBase64: string;
+      eventId: number;
     };
 
 export type AgentConversationStatus =

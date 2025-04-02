@@ -1,4 +1,3 @@
-import { Phoneme } from "@/service/rhubarb";
 import { FacialExpression } from "@/constants/facial-expressions";
 
 export type TTSApiResponse = {
@@ -14,8 +13,7 @@ export type TTSApiResponse = {
     | "Surprised"
     | "DismissingGesture"
     | "ThoughtfulHeadShake";
-  audio: string;
-  phonemes: Phoneme;
+  audioBase64: string;
 };
 
 export type TTSApiRequest = {
