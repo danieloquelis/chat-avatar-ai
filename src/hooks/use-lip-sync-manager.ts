@@ -44,14 +44,12 @@ export function useLipSyncManager() {
   const [animation, setAnimation] = useState<AvatarAnimationType>("Idle");
   const [facialExpression, setFacialExpression] =
     useState<FacialExpression>("default");
-  const [audioBase64, setAudioBase64] = useState<string>();
 
-  const { playAudio, isPlaying, stopAudio, currentTime } = usePcmPlayer({
+  const { playAudio, currentTime } = usePcmPlayer({
     onAudioPlayed: () => {
       setFacialExpression("default");
       setPhonemes(undefined);
       setAnimation("Idle");
-      setAudioBase64(undefined);
       setIsSpeaking(false);
       isPlayingRef.current = false;
 
@@ -170,6 +168,57 @@ export function useLipSyncManager() {
     processChunk(nextItem);
   }, [processChunk]);
 
+  const maybeStartNextPlayback = useCallback(async () => {
+    if (isPlayingRef.current || readyQueueRef.current.length === 0) {
+      console.log("[LipSync] Skipping playback:", {
+        isPlaying: isPlayingRef.current,
+        readyQueueLength: readyQueueRef.current.length,
+      });
+      return;
+    }
+
+    // Check if the next chunk is in sequence
+    const nextItem = readyQueueRef.current[0];
+    if (nextItem.sequence !== lastPlayedSequenceRef.current + 1) {
+      console.log("[LipSync] Sequence mismatch:", {
+        expected: lastPlayedSequenceRef.current + 1,
+        actual: nextItem.sequence,
+      });
+      // If we're not playing and have a gap, try to process more chunks
+      if (!isPlayingRef.current && processingQueueRef.current.length > 0) {
+        processNextChunk();
+      }
+      return;
+    }
+
+    isPlayingRef.current = true;
+
+    try {
+      const { audioBase64, mouthCues, sequence } =
+        readyQueueRef.current.shift()!;
+      lastPlayedSequenceRef.current = sequence;
+
+      console.log("[LipSync] Starting playback:", { sequence });
+
+      setFacialExpression("smile");
+      setPhonemes(mouthCues);
+      setAnimation("TalkingTwo");
+
+      // Start processing next chunk while playing current one
+      if (
+        processingQueueRef.current.length > 0 &&
+        activeProcessesRef.current < PARALLEL_PROCESSING_LIMIT
+      ) {
+        processNextChunk();
+      }
+
+      await playAudio(audioBase64);
+    } catch (error) {
+      console.error("[LipSync] Error playing audio:", error);
+      isPlayingRef.current = false;
+    }
+  }, [playAudio, processNextChunk]);
+
   const handleAudioChunk = useCallback(
     (options: HandleAudioChunkOptions) => {
       const { eventId, audioBase64 } = options;
@@ -237,58 +286,6 @@ export function useLipSyncManager() {
     },
     [processNextChunk]
   );
-
-  const maybeStartNextPlayback = useCallback(async () => {
-    if (isPlayingRef.current || readyQueueRef.current.length === 0) {
-      console.log("[LipSync] Skipping playback:", {
-        isPlaying: isPlayingRef.current,
-        readyQueueLength: readyQueueRef.current.length,
-      });
-      return;
-    }
-
-    // Check if the next chunk is in sequence
-    const nextItem = readyQueueRef.current[0];
-    if (nextItem.sequence !== lastPlayedSequenceRef.current + 1) {
-      console.log("[LipSync] Sequence mismatch:", {
-        expected: lastPlayedSequenceRef.current + 1,
-        actual: nextItem.sequence,
-      });
-      // If we're not playing and have a gap, try to process more chunks
-      if (!isPlayingRef.current && processingQueueRef.current.length > 0) {
-        processNextChunk();
-      }
-      return;
-    }
-
-    isPlayingRef.current = true;
-
-    try {
-      const { audioBase64, mouthCues, sequence } =
-        readyQueueRef.current.shift()!;
-      lastPlayedSequenceRef.current = sequence;
-
-      console.log("[LipSync] Starting playback:", { sequence });
-
-      setFacialExpression("smile");
-      setPhonemes(mouthCues);
-      setAnimation("TalkingTwo");
-      setAudioBase64(audioBase64);
-
-      // Start processing next chunk while playing current one
-      if (
-        processingQueueRef.current.length > 0 &&
-        activeProcessesRef.current < PARALLEL_PROCESSING_LIMIT
-      ) {
-        processNextChunk();
-      }
-
-      await playAudio(audioBase64);
-    } catch (error) {
-      console.error("[LipSync] Error playing audio:", error);
-      isPlayingRef.current = false;
-    }
-  }, [playAudio, processNextChunk]);
 
   return {
     handleAudioChunk,

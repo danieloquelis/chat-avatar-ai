@@ -18,14 +18,8 @@ import { SkinnedMesh } from "three";
 export const Avatar: FC<AvatarProps> = (props) => {
   const { nodes, materials, scene } = useAvatarModel();
   const { animations, group, actions } = useAvatarAnimations();
-  const {
-    phonemes,
-    facialExpression,
-    audioBase64,
-    animation,
-    isSpeaking,
-    currentTime,
-  } = useSpeech();
+  const { phonemes, facialExpression, animation, isSpeaking, currentTime } =
+    useSpeech();
   const [setupMode, setSetupMode] = useState(false);
   const [blink, setBlink] = useState(false);
   const skinnedMeshesRef = useRef<SkinnedMesh[]>([]);

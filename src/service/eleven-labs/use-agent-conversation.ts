@@ -130,6 +130,8 @@ export const useAgentConversation = (options: UseAgentConversationOptions) => {
     startStreaming,
     status,
     stopStreaming,
+    agentId,
+    agentUrl,
   ]);
 
   const stopConversation = useCallback(async () => {

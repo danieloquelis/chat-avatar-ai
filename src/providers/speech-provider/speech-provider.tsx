@@ -58,7 +58,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
           content: message,
         },
       ]);
-      const { facialExpression, animation, audioBase64, text } = await trigger({
+      const { audioBase64, text } = await trigger({
         message,
       });
 
@@ -76,7 +76,7 @@ export const SpeechProvider: FC<PropsWithChildren> = (props) => {
         content: text,
       });
     },
-    [append, error, messages, setMessages, trigger]
+    [append, error, messages, setMessages, trigger, handleAudioChunk]
   );
 
   return (
