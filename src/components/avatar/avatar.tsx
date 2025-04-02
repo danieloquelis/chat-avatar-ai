@@ -34,19 +34,6 @@ export const Avatar: FC<AvatarProps> = (props) => {
     skinnedMeshesRef.current = skinnedMeshes;
   }, [scene]);
 
-  // useEffect(() => {
-  //   if (!audioBase64 || isSpeaking) {
-  //     return;
-  //   }
-
-  //   playAudio(audioBase64);
-
-  //   // Cleanup if needed
-  //   return () => {
-  //     stopAudio();
-  //   };
-  // }, [audioBase64]);
-
   useEffect(() => {
     if (!actions[animation]) {
       return;
