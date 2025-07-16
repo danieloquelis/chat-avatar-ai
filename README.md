@@ -4,6 +4,10 @@
 
 A fun, experimental project that puts a **face** to all the generative AI models we use today. This repository showcases an interactive chat experience with a 3D avatar, using various modern web and AI technologies.
 
+**Demo Video:**  
+
+[![Watch the demo](https://img.youtube.com/vi/x09mKlelsTU/0.jpg)](https://www.youtube.com/watch?v=x09mKlelsTU)
+
 ---
 
 ## Overview
